@@ -18,8 +18,7 @@ module.exports = function (sandbox, fn, options) {
 };
 
 var token = function (o) {
-    var oauth = serand.store('oauth');
-    var options = oauth.options;
+    var options = serand.store('oauth');
     $.ajax({
         method: 'POST',
         url: '/apis/v/tokens',
@@ -27,7 +26,8 @@ var token = function (o) {
             'X-Host': 'accounts.serandives.com'
         },
         data: {
-            grant_type: oauth.type,
+            client_id: options.client_id,
+            grant_type: options.type,
             code: o.code
         },
         contentType: 'application/x-www-form-urlencoded',
@@ -35,18 +35,24 @@ var token = function (o) {
         success: function (token) {
             var user = {
                 tid: token.id,
-                username: token.username,
                 access: token.access_token,
                 refresh: token.refresh_token,
                 expires: token.expires_in
             };
-            serand.on('user', 'permissions', user, function (err, token) {
+            serand.emit('token', 'info', user.tid, user.access, function (err, token) {
                 if (err) {
                     serand.emit('user', 'login error');
                     return;
                 }
                 user.has = token.has;
-                serand.emit('user', 'logged in', user, options);
+                serand.emit('user', 'info', token.user, user.access, function (err, usr) {
+                    if (err) {
+                        serand.emit('user', 'login error');
+                        return;
+                    }
+                    user.username = usr.email;
+                    serand.emit('user', 'logged in', user, options);
+                });
             });
         },
         error: function () {
@@ -55,12 +61,11 @@ var token = function (o) {
     });
 };
 
-serand.on('user', 'oauth', function (type, options) {
-    serand.store('oauth', {
-        type: type,
-        options: options
-    });
-    serand.emit('user', 'authenticator', type, function (err, uri) {
+serand.on('user', 'oauth', function (options) {
+    serand.store('oauth', options);
+    serand.emit('user', 'authenticator', {
+        type: 'facebook'
+    }, function (err, uri) {
         redirect(uri);
     });
 });
