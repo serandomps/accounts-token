@@ -21,10 +21,7 @@ var token = function (o) {
     var options = serand.store('oauth');
     $.ajax({
         method: 'POST',
-        url: '/apis/v/tokens',
-        headers: {
-            'X-Host': 'accounts.serandives.com'
-        },
+        url: 'https://accounts.serandives.com/apis/v/tokens',
         data: {
             client_id: options.client_id,
             grant_type: options.type,
