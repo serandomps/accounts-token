@@ -1,5 +1,6 @@
 var dust = require('dust')();
 var serand = require('serand');
+var utils = require('utils');
 var redirect = serand.redirect;
 
 dust.loadSource(dust.compile(require('./template'), 'accounts-token'));
@@ -21,7 +22,7 @@ var token = function (o) {
     var options = serand.store('oauth');
     $.ajax({
         method: 'POST',
-        url: 'https://accounts.serandives.com/apis/v/tokens',
+        url: utils.resolve('accounts://apis/v/tokens'),
         data: {
             client_id: options.client_id,
             grant_type: options.type,
