@@ -48,6 +48,7 @@ var token = function (o) {
                         serand.emit('user', 'login error');
                         return;
                     }
+                    user.id = usr.id
                     user.username = usr.email;
                     serand.emit('user', 'logged in', user, options);
                 });
