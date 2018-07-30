@@ -5,14 +5,14 @@ var redirect = serand.redirect;
 
 dust.loadSource(dust.compile(require('./template'), 'accounts-token'));
 
-module.exports = function (sandbox, fn, options) {
+module.exports = function (sandbox, options, done) {
     dust.render('accounts-token', options, function (err, out) {
         if (err) {
-            return;
+            return done(err);
         }
         token(options);
         sandbox.append(out);
-        fn(false, function () {
+        done(null, function () {
             $('.accounts-token', sandbox).remove();
         });
     });
@@ -39,14 +39,12 @@ var token = function (o) {
             };
             serand.emit('token', 'info', user.tid, user.access, function (err, token) {
                 if (err) {
-                    serand.emit('user', 'login error');
-                    return;
+                    return serand.emit('user', 'login error', err);
                 }
                 user.has = token.has;
                 serand.emit('user', 'info', token.user, user.access, function (err, usr) {
                     if (err) {
-                        serand.emit('user', 'login error');
-                        return;
+                        return serand.emit('user', 'login error', err);
                     }
                     user.id = usr.id
                     user.username = usr.email;
@@ -54,8 +52,8 @@ var token = function (o) {
                 });
             });
         },
-        error: function () {
-            serand.emit('user', 'login error');
+        error: function (xhr, status, err) {
+            serand.emit('user', 'login error', err || status || xhr);
         }
     });
 };
