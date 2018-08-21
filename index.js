@@ -24,7 +24,8 @@ var token = function (o) {
         method: 'POST',
         url: utils.resolve('accounts://apis/v/tokens'),
         data: {
-            client_id: options.client_id,
+            redirect_uri: options.location,
+            client_id: options.clientId,
             grant_type: options.type,
             code: o.code
         },
@@ -62,7 +63,7 @@ serand.on('user', 'oauth', function (options) {
     serand.store('oauth', options);
     serand.emit('user', 'authenticator', {
         type: 'facebook',
-        location: options.location
+        location: utils.resolve('accounts://auth/oauth')
     }, function (err, uri) {
         redirect(uri);
     });
