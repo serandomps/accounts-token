@@ -61,7 +61,8 @@ var token = function (o) {
 serand.on('user', 'oauth', function (options) {
     serand.store('oauth', options);
     serand.emit('user', 'authenticator', {
-        type: 'facebook'
+        type: 'facebook',
+        location: options.location
     }, function (err, uri) {
         redirect(uri);
     });
