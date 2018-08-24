@@ -22,7 +22,7 @@ var token = function (o) {
     var options = serand.store('oauth');
     $.ajax({
         method: 'POST',
-        url: utils.resolve('accounts://apis/v/tokens'),
+        url: utils.resolve('accounts:///apis/v/tokens'),
         data: {
             redirect_uri: options.location,
             client_id: options.clientId,
@@ -63,7 +63,7 @@ serand.on('user', 'oauth', function (options) {
     serand.store('oauth', options);
     serand.emit('user', 'authenticator', {
         type: 'facebook',
-        location: utils.resolve('accounts://auth/oauth')
+        location: utils.resolve('accounts:///auth/oauth')
     }, function (err, uri) {
         redirect(uri);
     });
