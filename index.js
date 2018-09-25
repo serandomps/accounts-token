@@ -5,7 +5,7 @@ var redirect = serand.redirect;
 
 dust.loadSource(dust.compile(require('./template'), 'accounts-token'));
 
-module.exports = function (sandbox, options, done) {
+module.exports = function (ctx, sandbox, options, done) {
     dust.render('accounts-token', options, function (err, out) {
         if (err) {
             return done(err);
