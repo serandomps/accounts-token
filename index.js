@@ -1,6 +1,8 @@
 var dust = require('dust')();
 var serand = require('serand');
 var utils = require('utils');
+var token = require('token');
+var user = require('user');
 var redirect = serand.redirect;
 
 dust.loadSource(dust.compile(require('./template'), 'accounts-token'));
@@ -10,7 +12,15 @@ module.exports = function (ctx, sandbox, options, done) {
         if (err) {
             return done(err);
         }
-        token(options);
+        var o = serand.store('oauth');
+        findToken(o, options, function (err, usr) {
+            if (err) {
+                serand.emit('user', 'login error', err);
+                return console.error(err);
+            }
+            serand.emit('user', 'logged in', usr, options);
+            serand.store('oauth', null);
+        });
         sandbox.append(out);
         done(null, function () {
             $('.accounts-token', sandbox).remove();
@@ -18,8 +28,7 @@ module.exports = function (ctx, sandbox, options, done) {
     });
 };
 
-var token = function (o) {
-    var options = serand.store('oauth');
+var findToken = function (options, o, done) {
     $.ajax({
         method: 'POST',
         url: utils.resolve('accounts:///apis/v/tokens'),
@@ -31,40 +40,30 @@ var token = function (o) {
         },
         contentType: 'application/x-www-form-urlencoded',
         dataType: 'json',
-        success: function (token) {
-            var user = {
-                tid: token.id,
-                access: token.access_token,
-                refresh: token.refresh_token,
-                expires: token.expires_in
+        success: function (tok) {
+            var uzer = {
+                tid: tok.id,
+                access: tok.access_token,
+                refresh: tok.refresh_token,
+                expires: tok.expires_in
             };
-            serand.emit('token', 'info', user.tid, user.access, function (err, token) {
+            token.findOne(uzer.tid, uzer.access, function (err, tok) {
                 if (err) {
-                    return serand.emit('user', 'login error', err);
+                    return done(err);
                 }
-                user.has = token.has;
-                serand.emit('user', 'info', token.user, user.access, function (err, usr) {
+                uzer.has = tok.has;
+                user.findOne(tok.user, uzer.access, function (err, usr) {
                     if (err) {
-                        return serand.emit('user', 'login error', err);
+                        return done(err);
                     }
-                    user.id = usr.id
-                    user.username = usr.email;
-                    serand.emit('user', 'logged in', user, options);
+                    uzer.id = usr.id
+                    uzer.username = usr.email;
+                    done(null, uzer);
                 });
             });
         },
         error: function (xhr, status, err) {
-            serand.emit('user', 'login error', err || status || xhr);
+            done(err || status || xhr);
         }
     });
 };
-
-serand.on('user', 'oauth', function (options) {
-    serand.store('oauth', options);
-    serand.emit('user', 'authenticator', {
-        type: 'facebook',
-        location: utils.resolve('accounts:///auth/oauth')
-    }, function (err, uri) {
-        redirect(uri);
-    });
-});

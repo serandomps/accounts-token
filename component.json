@@ -9,6 +9,8 @@
     "dependencies": {
         "serandomps/dust": "master",
         "serandomps/serand": "master",
-        "serandomps/utils": "master"
+        "serandomps/utils": "master",
+        "serandomps/token": "master",
+        "serandomps/user": "master"
     }
 }
