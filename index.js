@@ -19,7 +19,7 @@ module.exports = function (ctx, container, options, done) {
                 serand.emit('user', 'login error', err);
                 return console.error(err);
             }
-            serand.emit('user', 'logged in', usr, options);
+            serand.emit('user', 'logged in', usr, o);
             serand.store('oauth', null);
         });
         sandbox.append(out);
@@ -29,15 +29,15 @@ module.exports = function (ctx, container, options, done) {
     });
 };
 
-var findToken = function (options, o, done) {
+var findToken = function (o, options, done) {
     $.ajax({
         method: 'POST',
         url: utils.resolve('accounts:///apis/v/tokens'),
         data: {
-            redirect_uri: options.location,
-            client_id: options.clientId,
-            grant_type: options.type,
-            code: o.code
+            redirect_uri: o.location,
+            client_id: o.clientId,
+            grant_type: o.type,
+            code: options.code
         },
         contentType: 'application/x-www-form-urlencoded',
         dataType: 'json',
